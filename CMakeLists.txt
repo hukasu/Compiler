@@ -5,7 +5,7 @@ project(Compiler)
 add_library(
 	CompilerLib
 	STATIC
-	src/lexer.cpp
+	src/nfa.cpp
 )
 target_include_directories(
 	CompilerLib
@@ -13,5 +13,5 @@ target_include_directories(
 )
 target_compile_features(
 	CompilerLib
-	PUBLIC cxx_std_14
+	PUBLIC cxx_std_17
 )
