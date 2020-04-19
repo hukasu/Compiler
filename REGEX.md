@@ -18,7 +18,7 @@ All characters except `{` and `}` are used as-is.
 
 E.g. `a`, `^`, `♪`, `山`  
 
-You can write any character, including the reserved characters, by wrapping them in `{l:<c>}`
+You can write reserved characters, and any other character, by wrapping them in `{l:<c>}`
 
 E.g. `{l:{}`, `{l:}}`, `{l:a}`, `{l::}`, `{l:♪}`, `{l:山}`
 
@@ -26,11 +26,9 @@ E.g. `{l:{}`, `{l:}}`, `{l:a}`, `{l::}`, `{l:♪}`, `{l:山}`
 
 The alternation between 2 or more paths is done by `{a:<expr1>:<expr2>[:<exprN>]}`.
 
-E.g. `{a:abc:def:}`
+E.g. `{a:{abc}{def}{}}`
 
 Note: the empty path is to represent an empty string (`ε`).
-
-Note2: to include `:` literal, it has to be wrapped in the literal brackets. E.g. `{a:abc:def{l::}}`
 
 ## Concatenation
 
