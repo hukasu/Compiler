@@ -34,7 +34,7 @@ Note: the empty path is to represent an empty string (`ε`).
 
 Concatenation does not have to be wrapped on curly brackets, any symbol followed by another will be treated as concatenation.
 
-E.g. `abc{a:def:ghi}`
+E.g. `abc{a:{def}{ghi}}`
 
 ## Repetition
 
