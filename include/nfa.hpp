@@ -26,7 +26,8 @@ namespace compiler {
 			uint64_t m_last_id;
 			enum class ReturnType : uint8_t {
 				eEndOfString,
-				eEndOfBracket
+				eEndOfBracket,
+				eAlternationPathEnd
 			} m_return_type;
 		};
 		struct NFANode {

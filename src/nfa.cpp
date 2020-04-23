@@ -129,12 +129,17 @@ namespace compiler {
 		bool more_paths = true;
 		while (more_paths) {
 			NFARegexState rs = alternationPath(_regex, _current);
-			if (rs.m_return_type == NFARegexState::ReturnType::eEndOfBracket) {
-				more_paths = false;
-			} else if (rs.m_return_type == NFARegexState::ReturnType::eEndOfString) {
-				throw UnexpectedEndOfStringException();
-			} else {
+			switch (rs.m_return_type) {
+			case NFARegexState::ReturnType::eAlternationPathEnd:
 				path_ends.push_back(rs.m_last_id);
+				break;
+			case NFARegexState::ReturnType::eEndOfBracket:
+				more_paths = false;
+				break;
+			case NFARegexState::ReturnType::eEndOfString:
+				throw UnexpectedEndOfStringException();
+			default:
+				throw InternalErrorException();
 			}
 		}
 
@@ -158,7 +163,19 @@ namespace compiler {
 		if (c == '{') {
 			uint64_t new_id = addNode();
 			addTransition(_current, new_id, '\0');
-			return registerCharacter(_regex, new_id);
+			NFARegexState rs = registerCharacter(_regex, new_id);
+
+			switch (rs.m_return_type) {
+			case NFARegexState::ReturnType::eEndOfBracket:
+				return NFARegexState{
+					rs.m_last_id,
+					NFARegexState::ReturnType::eAlternationPathEnd
+				};
+			case NFARegexState::ReturnType::eEndOfString:
+				throw UnexpectedEndOfStringException();
+			default:
+				throw InternalErrorException();
+			}
 		} else if (c == '}') {
 			return NFARegexState{
 				_current,
