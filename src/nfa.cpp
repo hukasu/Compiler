@@ -3,6 +3,25 @@
 #include <queue>
 
 namespace compiler {
+	bool NFATransition::operator<(const NFATransition &_Right) const {
+		if (m_source == _Right.m_source) {
+			if (m_destination == _Right.m_destination) {
+				return m_character < _Right.m_character;
+			} else {
+				return m_destination < _Right.m_destination;
+			}
+		} else {
+			return m_source < _Right.m_source;
+		}
+	}
+
+	bool NFATransition::operator==(const compiler::NFATransition &_Right) const {
+		return
+			m_source == _Right.m_source &&
+			m_destination == _Right.m_destination &&
+			m_character == _Right.m_character;
+	}
+
 	NFA::NFA() {
 		m_nodes.push_back(
 			NFANode{
@@ -240,6 +259,23 @@ namespace compiler {
 
 			std::rethrow_exception(std::current_exception());
 		}
+	}
+
+	std::set<NFATransition> NFA::getTransitions() {
+		std::set<NFATransition> transitions;
+		for (size_t i = 0; i < m_nodes.size(); i++) {
+			NFANode& node = m_nodes[i];
+			for (std::pair<char, uint64_t> transition : node.m_transitions) {
+				transitions.insert(
+					NFATransition{
+						i,
+						transition.second,
+						transition.first
+					}
+				);
+			}
+		}
+		return std::move(transitions);
 	}
 
 	std::string NFA::UnexpectedEndOfStringException::buildMessage() {

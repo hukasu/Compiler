@@ -6,11 +6,21 @@
 #endif // UNICODE
 
 #include <map>
+#include <set>
 #include <vector>
 #include <string>
 #include <sstream>
 
 namespace compiler {
+	struct NFATransition {
+		uint64_t m_source;
+		uint64_t m_destination;
+		char m_character;
+
+		bool operator<(const NFATransition &_right) const;
+		bool operator==(const NFATransition &_right) const;
+	};
+
 	class NFA {
 		struct NFARegexState {
 			uint64_t m_last_id;
@@ -46,6 +56,10 @@ namespace compiler {
 
 		void registerRegex(std::string _regex);
 
+		/**
+		* Note: due to how it's implemented, UTF-8 char will have each of it's bytes as a different transision
+		*/
+		std::set<NFATransition> getTransitions();
 	public:
 		class UnexpectedEndOfStringException : public std::runtime_error {
 			static std::string buildMessage();
