@@ -33,6 +33,9 @@ namespace compiler {
 
 		NFARegexState beginOpenBracket(std::stringstream &_regex, uint64_t _current);
 
+		NFARegexState alternation(std::stringstream &_regex, uint64_t _current);
+		NFARegexState alternationPath(std::stringstream &_regex, uint64_t _current);
+
 		NFARegexState beginOfString(std::stringstream &_regex, uint64_t _current);
 		NFARegexState endOfString(std::stringstream &_regex, uint64_t _current);
 
@@ -54,6 +57,18 @@ namespace compiler {
 			static std::string buildMessage(size_t _byte_position);
 		public:
 			ExpectedColonException(size_t _byte_position);
+		};
+
+		class ShortAlternationException : public std::runtime_error {
+			static std::string buildMessage(size_t _byte_position);
+		public:
+			ShortAlternationException(size_t _byte_position);
+		};
+
+		class UnexpectedCharacterInAlternationException : public std::runtime_error {
+			static std::string buildMessage(char *_c, size_t _byte_position);
+		public:
+			UnexpectedCharacterInAlternationException(char *_c, size_t _byte_position);
 		};
 
 		class ExpectedEndOfBracketException : public std::runtime_error {

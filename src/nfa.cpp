@@ -77,27 +77,77 @@ namespace compiler {
 		if (!read_char) {
 			throw UnexpectedEndOfStringException();
 		}
-		NFARegexState rs;
+
 		switch (c) {
+		case 'a':
+			return alternation(_regex, _current);
+			break;
 		case 'b':
-			rs = beginOfString(_regex, _current);
+			return beginOfString(_regex, _current);
+			break;
 		case 'e':
-			rs = endOfString(_regex, _current);
+			return endOfString(_regex, _current);
+			break;
 		case 'l':
-			rs = literalCharacter(_regex, _current);
+			return literalCharacter(_regex, _current);
+			break;
 		default:
-			throw UnknownBracketOperationException(c, static_cast<uint64_t>(_regex.tellg()) - 1);
+			throw UnknownBracketOperationException(c, static_cast<size_t>(_regex.tellg()) - 1);
+		}
+	}
+
+	NFA::NFARegexState NFA::alternation(std::stringstream &_regex, uint64_t _current) {
+		char c;
+		bool read_char = retrieveChar(_regex, c);
+		if (!read_char) {
+			throw UnexpectedEndOfStringException();
+		}
+		if (c != ':') {
+			throw ExpectedColonException(static_cast<size_t>(_regex.tellg()) - 1);
 		}
 
-		switch (rs.m_return_type) {
-		case NFARegexState::ReturnType::eEndOfString:
+		std::vector<uint64_t> path_ends;
+		bool more_paths = true;
+		while (more_paths) {
+			NFARegexState rs = alternationPath(_regex, _current);
+			if (rs.m_return_type == NFARegexState::ReturnType::eEndOfBracket) {
+				more_paths = false;
+			} else if (rs.m_return_type == NFARegexState::ReturnType::eEndOfString) {
+				throw UnexpectedEndOfStringException();
+			} else {
+				path_ends.push_back(rs.m_last_id);
+			}
+		}
+
+		if (path_ends.size() < 2) {
+			throw ShortAlternationException(static_cast<size_t>(_regex.tellg()) - 1);
+		}
+
+		uint64_t end_node = addNode();
+		for (uint64_t path_end : path_ends) {
+			addTransition(path_end, end_node, '\0');
+		}
+		return registerCharacter(_regex, end_node);
+	}
+
+	NFA::NFARegexState NFA::alternationPath(std::stringstream &_regex, uint64_t _current) {
+		char c;
+		bool read_char = retrieveChar(_regex, c);
+		if (!read_char) {
 			throw UnexpectedEndOfStringException();
-
-		case NFARegexState::ReturnType::eEndOfBracket:
-			return registerCharacter(_regex, rs.m_last_id);
-
-		default:
-			throw InternalErrorException();
+		}
+		if (c == '{') {
+			uint64_t new_id = addNode();
+			addTransition(_current, new_id, '\0');
+			return registerCharacter(_regex, new_id);
+		} else if (c == '}') {
+			return NFARegexState{
+				_current,
+				NFARegexState::ReturnType::eEndOfBracket
+			};
+		} else {
+			char chars[2] = { c, '\0' }; // TODO make UTF-8
+			throw UnexpectedCharacterInAlternationException(chars, static_cast<size_t>(_regex.tellg()) - std::strlen(chars));
 		}
 	}
 
@@ -113,6 +163,7 @@ namespace compiler {
 		if (c != '}') {
 			throw UnexpectedEndOfBracketException(static_cast<size_t>(_regex.tellg()) - 1);
 		}
+		return registerCharacter(_regex, new_id);
 	}
 
 	NFA::NFARegexState NFA::endOfString(std::stringstream &_regex, uint64_t _current) {
@@ -127,6 +178,7 @@ namespace compiler {
 		if (c != '}') {
 			throw UnexpectedEndOfBracketException(static_cast<size_t>(_regex.tellg()) - 1);
 		}
+		return registerCharacter(_regex, new_id);
 	}
 
 	NFA::NFARegexState NFA::literalCharacter(std::stringstream &_regex, uint64_t _current) {
@@ -136,7 +188,7 @@ namespace compiler {
 			throw UnexpectedEndOfStringException();
 		}
 		if (c != ':') {
-			throw ExpectedColonException(static_cast<uint64_t>(_regex.tellg()) - 1);
+			throw ExpectedColonException(static_cast<size_t>(_regex.tellg()) - 1);
 		}
 		
 		read_char = retrieveChar(_regex, c);
@@ -155,16 +207,19 @@ namespace compiler {
 		} else if ((c & 0b11111000) == 0b11110000) { // 4-byte character
 			bytes_to_read = 3;
 		} else {
-			throw NonUTF8CharacterException(static_cast<uint64_t>(_regex.tellg()) - 1);
+			throw NonUTF8CharacterException(static_cast<size_t>(_regex.tellg()) - 1);
 		}
+		uint64_t prev_id = new_id;
 		for (uint8_t i = 0; i < bytes_to_read; i++) {
 			read_char = retrieveChar(_regex, c);
 			if (!read_char) {
 				throw UnexpectedEndOfStringException();
 			}
 			new_id = addNode();
-			addTransition(_current, new_id, c);
+			addTransition(prev_id, new_id, c);
+			prev_id = new_id;
 		}
+		return registerCharacter(_regex, prev_id);
 	}
 
 	void NFA::registerRegex(std::string _regex) {
@@ -176,7 +231,7 @@ namespace compiler {
 		try {
 			NFARegexState rs = registerCharacter(regex, new_id);
 			if (rs.m_return_type == NFARegexState::ReturnType::eEndOfBracket) {
-				throw UnexpectedEndOfBracketException(static_cast<uint64_t>(regex.tellg()) - 1);
+				throw UnexpectedEndOfBracketException(static_cast<size_t>(regex.tellg()) - 1);
 			}
 		} catch (...) {
 			std::vector<NFANode>::iterator beg = m_nodes.begin(), end = m_nodes.end();
@@ -203,12 +258,30 @@ namespace compiler {
 	NFA::ExpectedColonException::ExpectedColonException(size_t _byte_position)
 		: std::runtime_error(buildMessage(_byte_position)) {}
 
+	std::string NFA::ShortAlternationException::buildMessage(size_t _byte_position) {
+		std::stringstream ss;
+		ss << "Alternation at byte [" << _byte_position << "] requires at least 2 paths.";
+		throw std::runtime_error(ss.str());
+	}
+
+	NFA::ShortAlternationException::ShortAlternationException(size_t _byte_position)
+		: std::runtime_error(buildMessage(_byte_position)) {}
+
+	std::string NFA::UnexpectedCharacterInAlternationException::buildMessage(char *_c, size_t _byte_position) {
+		std::stringstream ss;
+		ss << "Found '" << _c << "' outside of alternation brackets at byte [" << _byte_position << "].";
+		throw std::runtime_error(ss.str());
+	}
+
+	NFA::UnexpectedCharacterInAlternationException::UnexpectedCharacterInAlternationException(char *_c, size_t _byte_position)
+		: std::runtime_error(buildMessage(_c, _byte_position)) {}
+
 	std::string NFA::ExpectedEndOfBracketException::buildMessage(size_t _byte_position) {
 		std::stringstream ss;
 		ss << "Expected '}' at byte [" << _byte_position << "].";
 		throw std::runtime_error(ss.str());
 	}
-	
+
 	NFA::ExpectedEndOfBracketException::ExpectedEndOfBracketException(size_t _byte_position)
 		: std::runtime_error(buildMessage(_byte_position)) {}
 
