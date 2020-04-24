@@ -23,4 +23,5 @@ if (BUILD_TESTS)
 	
 	include("test/cmake/test_nfa_concatenation.cmake")
 	include("test/cmake/test_nfa_alternation.cmake")
+	include("test/cmake/test_nfa_incomplete_regex.cmake")
 endif()
