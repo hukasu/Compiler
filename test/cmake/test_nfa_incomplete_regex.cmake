@@ -1,3 +1,4 @@
+# This file is called using 'include', so the working directory is the same as CMakeLists.txt
 add_executable(
 	test_nfa_incomplete_regex
 	"test/test_nfa_incomplete_regex.cpp"
