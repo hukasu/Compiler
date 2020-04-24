@@ -4,8 +4,12 @@
 #include <nfa.hpp>
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <iterator>
 #include <set>
 #include <iostream>
+
+#include <nfa.hpp>
 
 bool testSuccessfulRegistration(
 	std::string _regex,
@@ -35,15 +39,15 @@ bool testSuccessfulRegistration(
 
 template <typename T>
 bool testExpectException(
-	std::string _regex,
-	std::set<compiler::NFATransition> &_transitions
+	std::string _regex
 ) {
+	static_assert(std::is_base_of<std::runtime_error, T>::value);
 	try {
 		compiler::NFA nfa;
 		try {
-			nfa.registerRegex(str);
+			nfa.registerRegex(_regex);
 		} catch (
-			typename std::enable_if<std::is_base_of<std::runtime_error, T>::value>::type &e
+			T &e
 		) {
 			std::cout << e.what() << std::endl;
 			std::cout << "Exception correctly raised" << std::endl;

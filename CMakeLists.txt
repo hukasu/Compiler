@@ -7,8 +7,7 @@ option(BUILD_TESTS "Should build tests?" OFF)
 add_library(
 	CompilerLib
 	STATIC
-	src/nfa.cpp
- "test/test_nfa_concatenation.cpp")
+	src/nfa.cpp)
 target_include_directories(
 	CompilerLib
 	PUBLIC include/
@@ -21,7 +20,5 @@ target_compile_features(
 if (BUILD_TESTS)
 	enable_testing()
 	
-	include("test/cmake/test_nfa_concatenation.cmake")
-	include("test/cmake/test_nfa_alternation.cmake")
-	include("test/cmake/test_nfa_incomplete_regex.cmake")
+	include("test/cmake/test_nfa.cmake")
 endif()
