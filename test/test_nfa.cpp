@@ -70,6 +70,5 @@ bool testEpsilonAlternation() {
 }
 
 bool testIncompleteRegex() {
-	bool a = testExpectException<compiler::NFA>("{a:{abc}{def}");
 	return testExpectException<compiler::NFA::UnexpectedEndOfStringException>("{a:{abc}{def}");
 }
