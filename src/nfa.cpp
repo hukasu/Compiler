@@ -26,7 +26,8 @@ namespace compiler {
 		m_nodes.push_back(
 			NFANode{
 				false,
-				std::multimap<char, uint64_t>()
+				std::map<char, uint64_t>(),
+				std::set<uint64_t>()
 			}
 		);
 	}
@@ -36,19 +37,24 @@ namespace compiler {
 		m_nodes.push_back(
 			NFANode{
 				false,
-				std::multimap<char, uint64_t>()
+				std::map<char, uint64_t>(),
+				std::set<uint64_t>()
 			}
 		);
 		return new_id;
 	}
 
 	void NFA::addTransition(uint64_t _src, uint64_t _dest, char _transition) {
-		m_nodes[_src].m_transitions.insert(
-			std::make_pair(
-				_transition,
-				_dest
-			)
-		);
+		if (_transition == '\0') {
+			m_nodes[_src].m_epsilon_transitions.insert(_dest);
+		} else {
+			m_nodes[_src].m_transitions.insert(
+				std::make_pair(
+					_transition,
+					_dest
+				)
+			);
+		}
 	}
 
 	bool NFA::retrieveChar(std::stringstream &_regex, char &_out_char) {
@@ -274,6 +280,8 @@ namespace compiler {
 			std::advance(beg, new_id);
 			m_nodes.erase(beg, end);
 
+			m_nodes[0].m_epsilon_transitions.erase(new_id);
+
 			std::rethrow_exception(std::current_exception());
 		}
 	}
@@ -282,6 +290,15 @@ namespace compiler {
 		std::set<NFATransition> transitions;
 		for (size_t i = 0; i < m_nodes.size(); i++) {
 			NFANode& node = m_nodes[i];
+			for (uint64_t transition : node.m_epsilon_transitions) {
+				transitions.insert(
+					NFATransition{
+						i,
+						transition,
+						'\0'
+					}
+				);
+			}
 			for (std::pair<char, uint64_t> transition : node.m_transitions) {
 				transitions.insert(
 					NFATransition{

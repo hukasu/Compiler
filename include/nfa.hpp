@@ -32,7 +32,8 @@ namespace compiler {
 		};
 		struct NFANode {
 			bool m_final_state = false;
-			std::multimap<char, uint64_t> m_transitions;
+			std::map<char, uint64_t> m_transitions;
+			std::set<uint64_t> m_epsilon_transitions;
 		};
 		std::vector<NFANode> m_nodes;
 
