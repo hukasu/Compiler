@@ -1,13 +1,26 @@
 # This file is called using 'include', so the working directory is the same as CMakeLists.txt
-add_executable(
-	test_nfa
-	"test/test_nfa.cpp"
-)
-target_link_libraries(
-	test_nfa
-	PUBLIC CompilerLib
-)
-add_test(
-	NAME test_nfa
-	COMMAND test_nfa
-)
+function (create_test test_subfolder test_name)
+	add_executable(
+		${test_name}
+		"test/${test_subfolder}/${test_name}.cpp"
+	)
+	target_link_libraries(
+		${test_name}
+		PUBLIC CompilerLib
+	)
+	target_include_directories(
+		${test_name}
+		PUBLIC "test/common"
+	)
+	add_test(
+		NAME ${test_name}
+		COMMAND ${test_name}
+	)
+endfunction()
+
+create_test(nfa test_nfa_simple_concatenation)
+create_test(nfa test_nfa_simple_alternation)
+create_test(nfa test_nfa_simple_alternation_with_epsilon)
+create_test(nfa test_nfa_incomplete_regex)
+create_test(nfa test_nfa_multiple_regex)
+create_test(nfa test_nfa_multiple_regex_with_failure)
