@@ -198,7 +198,7 @@ namespace compiler {
 			throw UnexpectedEndOfStringException();
 		}
 		if (c != '}') {
-			throw UnexpectedEndOfBracketException(static_cast<size_t>(_regex.tellg()) - 1);
+			throw ExpectedEndOfBracketException(static_cast<size_t>(_regex.tellg()) - 1);
 		}
 		return registerCharacter(_regex, new_id);
 	}
@@ -213,7 +213,7 @@ namespace compiler {
 			throw UnexpectedEndOfStringException();
 		}
 		if (c != '}') {
-			throw UnexpectedEndOfBracketException(static_cast<size_t>(_regex.tellg()) - 1);
+			throw ExpectedEndOfBracketException(static_cast<size_t>(_regex.tellg()) - 1);
 		}
 		return registerCharacter(_regex, new_id);
 	}
