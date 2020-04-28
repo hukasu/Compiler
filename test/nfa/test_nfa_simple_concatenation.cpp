@@ -10,8 +10,8 @@ int main(int argc, char **argv) {
 		compiler::NFATransition {3, 4, 'c'},
 	};
 
-	if (!testSuccessfulRegistration(nfa, "abc")) throw std::runtime_error("Failed to register regex");
-	if (!testEqualNFATransitions(nfa, nfa_test)) throw std::runtime_error("Transition set were not equals");
+	testSuccessfulRegistration(nfa, "abc");
+	testEqualNFATransitions(nfa, nfa_test);
 
 	return 0;
 }

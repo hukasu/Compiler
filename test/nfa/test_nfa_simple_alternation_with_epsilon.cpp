@@ -23,8 +23,8 @@ int main(int argc, char **argv) {
 		compiler::NFATransition {14, 15, '\0'},
 	};
 
-	if (!testSuccessfulRegistration(nfa, "{a:{aaaaa}{bbbbb}{}}")) throw std::runtime_error("Failed to register regex");
-	if (!testEqualNFATransitions(nfa, nfa_test)) throw std::runtime_error("Transition set were not equals");
+	testSuccessfulRegistration(nfa, "{a:{aaaaa}{bbbbb}{}}");
+	testEqualNFATransitions(nfa, nfa_test);
 
 	return 0;
 }

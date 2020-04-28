@@ -9,19 +9,18 @@ int main(int argc, char **argv) {
 		compiler::NFATransition {3, 4, 'c'},
 	};
 
-	if (!testSuccessfulRegistration(nfa, "abc")) throw std::runtime_error("Failed to register regex");
-	if (!testEqualNFATransitions(nfa, nfa_test)) throw std::runtime_error("Transition set were not equals");
+	testSuccessfulRegistration(nfa, "abc");
+	testEqualNFATransitions(nfa, nfa_test);
 
 	nfa_test.insert(compiler::NFATransition{ 0, 5, '\0' });
 	nfa_test.insert(compiler::NFATransition{ 5, 6, 'a' });
 	nfa_test.insert(compiler::NFATransition{ 6, 7, 'b' });
 	nfa_test.insert(compiler::NFATransition{ 7, 8, 'c' });
-	if (!testSuccessfulRegistration(nfa, "abc")) throw std::runtime_error("Failed to register regex");
-	if (!testEqualNFATransitions(nfa, nfa_test)) throw std::runtime_error("Transition set were not equals");
+	testSuccessfulRegistration(nfa, "abc");
+	testEqualNFATransitions(nfa, nfa_test);
 
-	if (!testExpectException<compiler::NFA::UnexpectedEndOfStringException>(nfa, "abc{"))
-		throw std::runtime_error("Registration didn't throw expected exception");
-	if (!testEqualNFATransitions(nfa, nfa_test)) throw std::runtime_error("Transition set were not equals");
+	testExpectException<compiler::NFA::UnexpectedEndOfStringException>(nfa, "abc{");
+	testEqualNFATransitions(nfa, nfa_test);
 
 	return 0;
 }

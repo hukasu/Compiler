@@ -5,10 +5,8 @@ int main(int argc, char **argv) {
 	compiler::NFA nfa;
 	std::set<compiler::NFATransition> nfa_test;
 
-	if (!testExpectException < compiler::NFA::UnexpectedEndOfStringException>(nfa, "{a:{abc}{def}}"))
-		throw std::runtime_error("Registration didn't throw expected exception");
-	if (testEqualNFATransitions(nfa, nfa_test))
-		throw std::runtime_error("Clean up after raised exception failed");
+	testExpectException<compiler::NFA::UnexpectedEndOfStringException>(nfa, "{a:{abc}{def}");
+	testEqualNFATransitions(nfa, nfa_test);
 
 	return 0;
 }

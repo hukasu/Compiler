@@ -1,9 +1,7 @@
 #ifndef __TEST__NFA__COMMON__HPP__
 #define __TEST__NFA__COMMON__HPP__
 
-#include <nfa.hpp>
 #include <string>
-#include <vector>
 #include <algorithm>
 #include <iterator>
 #include <set>
@@ -11,47 +9,29 @@
 
 #include <nfa.hpp>
 
-bool testSuccessfulRegistration(
+void testSuccessfulRegistration(
 	compiler::NFA &_nfa,
 	std::string _regex
 ) {
-	try {
-		_nfa.registerRegex(_regex);
-		return true;
-	} catch (std::runtime_error &e) {
-		std::cerr << e.what() << std::endl;
-		return false;
-	} catch (...) {
-		std::cerr << "Unknown exception." << std::endl;
-		return false;
-	}
+	_nfa.registerRegex(_regex);
 }
 
 template <typename T>
-bool testExpectException(
+void testExpectException(
 	compiler::NFA &_nfa,
 	std::string _regex
 ) {
 	static_assert(std::is_base_of<std::runtime_error, T>::value);
 	try {
-		try {
-			_nfa.registerRegex(_regex);
-			return false;
-		} catch (T &e) {
-			std::cout << e.what() << std::endl;
-			std::cout << "Exception correctly raised" << std::endl;
-			return true;
-		}
-	} catch (std::runtime_error &e) {
-		std::cerr << e.what() << std::endl;
-		return false;
-	} catch (...) {
-		std::cerr << "Unknown exception." << std::endl;
-		return false;
+		_nfa.registerRegex(_regex);
+		throw std::runtime_error("Didn't raise an exception");
+	} catch (T &e) {
+		std::cout << e.what() << std::endl;
+		std::cout << "Exception correctly raised" << std::endl;
 	}
 }
 
-bool testEqualNFATransitions(
+void testEqualNFATransitions(
 	compiler::NFA &_nfa,
 	std::set<compiler::NFATransition> &_transitions
 ) {
@@ -64,7 +44,7 @@ bool testEqualNFATransitions(
 		_transitions.end(),
 		std::inserter(res, res.begin())
 	);
-	return res.size() == 0;
+	if (res.size() != 0) throw std::runtime_error("NFA Transitions were not equal");
 }
 
 #endif // __TEST__NFA__COMMON__HPP__

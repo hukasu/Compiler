@@ -7,7 +7,8 @@ option(BUILD_TESTS "Should build tests?" OFF)
 add_library(
 	CompilerLib
 	STATIC
-	src/nfa.cpp)
+	src/nfa.cpp
+)
 target_include_directories(
 	CompilerLib
 	PUBLIC include/

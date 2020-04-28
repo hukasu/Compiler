@@ -87,12 +87,7 @@ namespace compiler {
 			// Simply add a transaction from the previous character to the new one
 			uint64_t new_id = addNode();
 			addTransition(_current, new_id, c);
-			try {
-				return registerCharacter(_regex, new_id);
-			} catch (std::runtime_error &e) {
-				m_nodes.pop_back();
-				throw e;
-			}
+			return registerCharacter(_regex, new_id);
 		}
 	}
 
