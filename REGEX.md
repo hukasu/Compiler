@@ -46,9 +46,13 @@ You can also achieve a fixed amount of repetition, or a range, with `{r;<n>:<exp
 
 E.g. `{r;5:abc}`, `{r;1;3:abc}`
 
-The POSIX option (`<expr>?`) can be achieved by having a repetition on the range `0-1`.
+Note: `<n>`, `<b>`, and `<e>` must be positive non zero integers, and `<e>` must be greater than `<b>`.
 
-E.g. `{r;0;1:abc}` is equivalent to the POSIX `abc?`.
+## Option
+
+The POSIX '?' is used as `{o:<expr>}`
+
+E.g. `{o:abc}`
 
 ## Grouping
 
