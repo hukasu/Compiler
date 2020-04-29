@@ -111,6 +111,9 @@ namespace compiler {
 		case 'l':
 			return literalCharacter(_regex, _current);
 			break;
+		case 'r':
+			return repetition(_regex, _current);
+			break;
 		default:
 			throw UnknownBracketOperationException(c, static_cast<size_t>(_regex.tellg()) - 1);
 		}
@@ -185,6 +188,35 @@ namespace compiler {
 		} else {
 			char chars[2] = { c, '\0' }; // TODO make UTF-8
 			throw UnexpectedCharacterInAlternationException(chars, static_cast<size_t>(_regex.tellg()) - std::strlen(chars));
+		}
+	}
+
+	NFA::NFARegexState NFA::repetition(std::stringstream &_regex, uint64_t _current) {
+		char c;
+		bool read_char = retrieveChar(_regex, c);
+		if (!read_char) {
+			throw UnexpectedEndOfStringException();
+		}
+		switch (c) {
+		case ';':
+			// TODO fixed number of repetitions
+			return NFARegexState{ 0, static_cast<NFA::NFARegexState::ReturnType>(-1) };
+		case ':':
+			uint64_t start_of_repetition = addNode();
+			NFARegexState rs = registerCharacter(_regex, start_of_repetition);
+			switch (rs.m_return_type) {
+			case NFA::NFARegexState::ReturnType::eEndOfBracket:
+				uint64_t end_of_repetition = addNode();
+				addTransition(start_of_repetition, end_of_repetition, '\0');
+				addTransition(rs.m_last_id, end_of_repetition, '\0');
+				return registerCharacter(_regex, end_of_repetition);
+			case NFA::NFARegexState::ReturnType::eEndOfString:
+				throw UnexpectedEndOfStringException();
+			default:
+				throw InternalErrorException();
+			}
+		default:
+			throw ExpectedColonException(static_cast<size_t>(_regex.tellg()) - 1);
 		}
 	}
 
