@@ -242,41 +242,137 @@ namespace compiler {
 				throw UnexpectedEndOfStringException();
 			}
 
-			std::streampos pos;
-			uint64_t last_id;
-			int64_t max_length = 0;
-			bool range_repetition = false;
 			switch (c) {
 			case ';':
-				// TODO
+				return rangeRepetition(_regex, _current, length);
 
 			case ':':
-				pos = _regex.tellg();
-				last_id = _current;
-				for (int64_t i = 0; i < length; i++) {
-					_regex.seekg(pos);
-					NFARegexState rs;
-					rs = registerCharacter(_regex, last_id);
-					
-					switch (rs.m_return_type) {
-					case NFA::NFARegexState::ReturnType::eEndOfBracket:
-						last_id = rs.m_last_id;
-						break;
+				NFARegexState rs;
+				rs = doFixedLeghtRepetition(_regex, _current, length);
+				switch (rs.m_return_type) {
+				case NFARegexState::ReturnType::eFixedRepetitionEnd:
+					return registerCharacter(_regex, rs.m_last_id);
 
-					case NFA::NFARegexState::ReturnType::eEndOfString:
-						throw UnexpectedEndOfStringException();
+				case NFARegexState::ReturnType::eEndOfString:
+					throw UnexpectedEndOfStringException();
 
-					default:
-						throw InternalErrorException();
-					}
+				default:
+					throw InternalErrorException();
 				}
-				return registerCharacter(_regex, last_id);
 
 			default:
 				throw ExpectedColonException(static_cast<size_t>(_regex.tellg()) - 1);
 			}
 		} else {
 			throw std::runtime_error("NAN at repetition length at byte [n].");
+		}
+	}
+
+	NFA::NFARegexState NFA::rangeRepetition(std::stringstream &_regex, uint64_t _current, int64_t _min_range) {
+		int64_t max_range = 0;
+		_regex >> max_range;
+		if (_regex.gcount() > 0) {
+			if (max_range <= 0) {
+				throw std::runtime_error("Repetition can't have negative lenght");
+			}
+			if (max_range < _min_range) {
+				throw std::runtime_error("Max range of repetition is smaller than min range.");
+			}
+
+			char c;
+			bool read_char = retrieveChar(_regex, c);
+			if (!read_char) {
+				throw UnexpectedEndOfStringException();
+			}
+
+			switch (c) {
+			case ':':
+			{
+				std::streampos pos = _regex.tellg();
+				NFARegexState rs = doFixedLeghtRepetition(_regex, _current, _min_range);
+				switch (rs.m_return_type) {
+				case NFARegexState::ReturnType::eFixedRepetitionEnd:
+				{
+					uint64_t last_id = rs.m_last_id;
+					for (int64_t i = 0; i < (max_range - _min_range); i++) {
+						_regex.seekg(pos);
+						rs = doOption(_regex, last_id);
+						switch (rs.m_return_type) {
+						case NFARegexState::ReturnType::eOptionEnd:
+							last_id = rs.m_last_id;
+							break;
+
+						case NFARegexState::ReturnType::eEndOfString:
+							throw UnexpectedEndOfStringException();
+
+						default:
+							throw InternalErrorException();
+						}
+					}
+					return registerCharacter(_regex, last_id);
+				}
+
+				case NFARegexState::ReturnType::eEndOfString:
+					throw UnexpectedEndOfStringException();
+
+				default:
+					throw InternalErrorException();
+				}
+			}
+
+			default:
+				throw ExpectedColonException(static_cast<size_t>(_regex.tellg()) - 1);
+			}
+		} else {
+			throw std::runtime_error("NAN at repetition length at byte [n].");
+		}
+	}
+
+	NFA::NFARegexState NFA::doFixedLeghtRepetition(
+		std::stringstream &_regex,
+		uint64_t _current,
+		int64_t _length
+	) {
+		std::streampos pos = _regex.tellg();
+		uint64_t last_id = _current;
+		for (int64_t i = 0; i < _length; i++) {
+			_regex.seekg(pos);
+			NFARegexState rs;
+			rs = registerCharacter(_regex, last_id);
+
+			switch (rs.m_return_type) {
+			case NFA::NFARegexState::ReturnType::eEndOfBracket:
+				last_id = rs.m_last_id;
+				break;
+
+			case NFA::NFARegexState::ReturnType::eEndOfString:
+				throw UnexpectedEndOfStringException();
+
+			default:
+				throw InternalErrorException();
+			}
+		}
+		return NFARegexState{
+			last_id,
+			NFARegexState::ReturnType::eFixedRepetitionEnd
+		};
+	}
+
+	NFA::NFARegexState NFA::doOption(std::stringstream &_regex, uint64_t _current) {
+		NFARegexState rs = registerCharacter(_regex, _current);
+		switch (rs.m_return_type) {
+		case NFARegexState::ReturnType::eEndOfBracket:
+			addTransition(_current, rs.m_last_id, '\0');
+			return NFARegexState{
+				rs.m_last_id,
+				NFARegexState::ReturnType::eOptionEnd
+			};
+			
+		case NFARegexState::ReturnType::eEndOfString:
+			throw UnexpectedEndOfStringException();
+
+		default:
+			throw InternalErrorException();
 		}
 	}
 

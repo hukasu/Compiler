@@ -27,7 +27,10 @@ namespace compiler {
 			enum class ReturnType : uint8_t {
 				eEndOfString,
 				eEndOfBracket,
-				eAlternationPathEnd
+				eAlternationPathEnd,
+				eFixedRepetitionEnd,
+				eRangeRepetitionEnd,
+				eOptionEnd
 			} m_return_type;
 		};
 		struct NFANode {
@@ -50,6 +53,11 @@ namespace compiler {
 
 		NFARegexState repetition(std::stringstream &_regex, uint64_t _current);
 		NFARegexState fixedLengthRepetition(std::stringstream &_regex, uint64_t _current);
+		NFARegexState rangeRepetition(std::stringstream &_regex, uint64_t _current, int64_t _min_range);
+
+		NFARegexState doFixedLeghtRepetition(std::stringstream &_regex, uint64_t _current, int64_t _length);
+
+		NFARegexState doOption(std::stringstream &_regex, uint64_t _current);
 
 		NFARegexState beginOfString(std::stringstream &_regex, uint64_t _current);
 		NFARegexState endOfString(std::stringstream &_regex, uint64_t _current);
