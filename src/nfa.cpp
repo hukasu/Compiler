@@ -197,26 +197,86 @@ namespace compiler {
 		if (!read_char) {
 			throw UnexpectedEndOfStringException();
 		}
+		
 		switch (c) {
 		case ';':
 			// TODO fixed number of repetitions
 			return NFARegexState{ 0, static_cast<NFA::NFARegexState::ReturnType>(-1) };
+		
 		case ':':
-			uint64_t start_of_repetition = addNode();
+			uint64_t start_of_repetition;
+			start_of_repetition = addNode();
 			NFARegexState rs = registerCharacter(_regex, start_of_repetition);
 			switch (rs.m_return_type) {
 			case NFA::NFARegexState::ReturnType::eEndOfBracket:
-				uint64_t end_of_repetition = addNode();
+				uint64_t end_of_repetition;
+				end_of_repetition = addNode();
 				addTransition(start_of_repetition, end_of_repetition, '\0');
 				addTransition(rs.m_last_id, end_of_repetition, '\0');
 				return registerCharacter(_regex, end_of_repetition);
+			
 			case NFA::NFARegexState::ReturnType::eEndOfString:
 				throw UnexpectedEndOfStringException();
+			
 			default:
 				throw InternalErrorException();
 			}
+		
 		default:
 			throw ExpectedColonException(static_cast<size_t>(_regex.tellg()) - 1);
+		}
+	}
+
+	NFA::NFARegexState NFA::fixedLengthRepetition(std::stringstream &_regex, uint64_t _current) {
+		int64_t length = 0;
+		_regex >> length;
+		
+		if (_regex.gcount() > 0) {
+			if (length <= 0) {
+				throw std::runtime_error("Repetition can't have negative lenght");
+			}
+
+			char c;
+			bool read_char = retrieveChar(_regex, c);
+			if (!read_char) {
+				throw UnexpectedEndOfStringException();
+			}
+
+			std::streampos pos;
+			uint64_t last_id;
+			int64_t max_length = 0;
+			bool range_repetition = false;
+			switch (c) {
+			case ';':
+				// TODO
+
+			case ':':
+				pos = _regex.tellg();
+				last_id = _current;
+				for (int64_t i = 0; i < length; i++) {
+					_regex.seekg(pos);
+					NFARegexState rs;
+					rs = registerCharacter(_regex, last_id);
+					
+					switch (rs.m_return_type) {
+					case NFA::NFARegexState::ReturnType::eEndOfBracket:
+						last_id = rs.m_last_id;
+						break;
+
+					case NFA::NFARegexState::ReturnType::eEndOfString:
+						throw UnexpectedEndOfStringException();
+
+					default:
+						throw InternalErrorException();
+					}
+				}
+				return registerCharacter(_regex, last_id);
+
+			default:
+				throw ExpectedColonException(static_cast<size_t>(_regex.tellg()) - 1);
+			}
+		} else {
+			throw std::runtime_error("NAN at repetition length at byte [n].");
 		}
 	}
 

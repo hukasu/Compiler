@@ -49,6 +49,7 @@ namespace compiler {
 		NFARegexState alternationPath(std::stringstream &_regex, uint64_t _current);
 
 		NFARegexState repetition(std::stringstream &_regex, uint64_t _current);
+		NFARegexState fixedLengthRepetition(std::stringstream &_regex, uint64_t _current);
 
 		NFARegexState beginOfString(std::stringstream &_regex, uint64_t _current);
 		NFARegexState endOfString(std::stringstream &_regex, uint64_t _current);
