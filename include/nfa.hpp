@@ -54,9 +54,9 @@ namespace compiler {
 		NFARegexState repetition(std::stringstream &_regex, uint64_t _current);
 		NFARegexState fixedLengthRepetition(std::stringstream &_regex, uint64_t _current);
 		NFARegexState rangeRepetition(std::stringstream &_regex, uint64_t _current, int64_t _min_range);
-
 		NFARegexState doFixedLeghtRepetition(std::stringstream &_regex, uint64_t _current, int64_t _length);
 
+		NFARegexState option(std::stringstream &_regex, uint64_t _current);
 		NFARegexState doOption(std::stringstream &_regex, uint64_t _current);
 
 		NFARegexState beginOfString(std::stringstream &_regex, uint64_t _current);

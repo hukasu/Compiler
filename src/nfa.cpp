@@ -358,6 +358,34 @@ namespace compiler {
 		};
 	}
 
+	NFA::NFARegexState NFA::option(std::stringstream &_regex, uint64_t _current) {
+		char c;
+		bool read_char = retrieveChar(_regex, c);
+		if (!read_char) {
+			throw UnexpectedEndOfStringException();
+		}
+
+		switch (c) {
+		case ':':
+		{
+			NFARegexState rs = doOption(_regex, _current);
+			switch (rs.m_return_type) {
+			case NFARegexState::ReturnType::eOptionEnd:
+				return registerCharacter(_regex, rs.m_last_id);
+
+			case NFARegexState::ReturnType::eEndOfString:
+				throw UnexpectedEndOfStringException();
+
+			default:
+				throw InternalErrorException();
+			}
+		}
+
+		default:
+			throw ExpectedColonException(static_cast<size_t>(_regex.tellg()) - 1);
+		}
+	}
+
 	NFA::NFARegexState NFA::doOption(std::stringstream &_regex, uint64_t _current) {
 		NFARegexState rs = registerCharacter(_regex, _current);
 		switch (rs.m_return_type) {
