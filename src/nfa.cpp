@@ -203,8 +203,7 @@ namespace compiler {
 		
 		switch (c) {
 		case ';':
-			// TODO fixed number of repetitions
-			return NFARegexState{ 0, static_cast<NFA::NFARegexState::ReturnType>(-1) };
+			return fixedLengthRepetition(_regex, _current);
 		
 		case ':':
 			uint64_t start_of_repetition;
