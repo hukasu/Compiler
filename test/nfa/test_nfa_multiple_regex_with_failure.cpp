@@ -1,6 +1,7 @@
 #include <test_nfa_common.hpp>
 
 int main(int argc, char **argv) {
+	// Failure after multiple registrations
 	compiler::NFA nfa;
 	std::set<compiler::NFATransition> nfa_test{
 		compiler::NFATransition {0, 1, '\0'},

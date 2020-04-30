@@ -1,7 +1,7 @@
 #include <test_nfa_common.hpp>
 
 int main(int argc, char **argv) {
-	// Simple alternation with epsilon path
+	// Alternation with less than 2 paths
 	compiler::NFA nfa;
 	std::set<compiler::NFATransition> nfa_test;
 
