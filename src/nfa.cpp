@@ -214,7 +214,8 @@ namespace compiler {
 			case NFA::NFARegexState::ReturnType::eEndOfBracket:
 				uint64_t end_of_repetition;
 				end_of_repetition = addNode();
-				addTransition(start_of_repetition, end_of_repetition, '\0');
+				addTransition(_current, end_of_repetition, '\0');
+				addTransition(end_of_repetition, start_of_repetition, '\0');
 				addTransition(rs.m_last_id, end_of_repetition, '\0');
 				return registerCharacter(_regex, end_of_repetition);
 			
