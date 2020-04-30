@@ -101,19 +101,22 @@ namespace compiler {
 		switch (c) {
 		case 'a':
 			return alternation(_regex, _current);
-			break;
+
 		case 'b':
 			return beginOfString(_regex, _current);
-			break;
+
 		case 'e':
 			return endOfString(_regex, _current);
-			break;
+
 		case 'l':
 			return literalCharacter(_regex, _current);
-			break;
+
+		case 'o':
+			return option(_regex, _current);
+
 		case 'r':
 			return repetition(_regex, _current);
-			break;
+
 		default:
 			throw UnknownBracketOperationException(c, static_cast<size_t>(_regex.tellg()) - 1);
 		}
