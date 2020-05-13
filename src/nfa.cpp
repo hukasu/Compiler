@@ -462,6 +462,10 @@ namespace compiler {
 			bytes_to_read = 2;
 		} else if ((c & 0b11111000) == 0b11110000) { // 4-byte character
 			bytes_to_read = 3;
+		} else if ((c & 0b11111100) == 0b11111000) { // 5-byte character
+			bytes_to_read = 4;
+		} else if ((c & 0b11111110) == 0b11111100) { // 6-byte character
+			bytes_to_read = 5;
 		} else {
 			throw NonUTF8CharacterException(static_cast<size_t>(_regex.tellg()) - 1);
 		}
