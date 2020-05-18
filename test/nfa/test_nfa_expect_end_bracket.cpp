@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
 	testEqualNFATransitions(nfa, nfa_test);
 
 	// End of string does not accept any other character inside the brackets
-	testExpectException<compiler::NFA::ExpectedColonException>(nfa, "{ea}");
+	testExpectException<compiler::NFA::ExpectedEndOfBracketException>(nfa, "{ea}");
 	testEqualNFATransitions(nfa, nfa_test);
 
 	return 0;
