@@ -540,7 +540,7 @@ namespace compiler {
 	std::string NFA::ExpectedColonException::buildMessage(size_t _byte_position) {
 		std::stringstream ss;
 		ss << "Expected ':' at byte [" << _byte_position << "].";
-		throw std::runtime_error(ss.str());
+		return ss.str();
 	}
 
 	NFA::ExpectedColonException::ExpectedColonException(size_t _byte_position)
@@ -549,7 +549,7 @@ namespace compiler {
 	std::string NFA::ShortAlternationException::buildMessage(size_t _byte_position) {
 		std::stringstream ss;
 		ss << "Alternation at byte [" << _byte_position << "] requires at least 2 paths.";
-		throw std::runtime_error(ss.str());
+		return ss.str();
 	}
 
 	NFA::ShortAlternationException::ShortAlternationException(size_t _byte_position)
@@ -558,7 +558,7 @@ namespace compiler {
 	std::string NFA::UnexpectedCharacterInAlternationException::buildMessage(char *_c, size_t _byte_position) {
 		std::stringstream ss;
 		ss << "Found '" << _c << "' outside of alternation brackets at byte [" << _byte_position << "].";
-		throw std::runtime_error(ss.str());
+		return ss.str();
 	}
 
 	NFA::UnexpectedCharacterInAlternationException::UnexpectedCharacterInAlternationException(char *_c, size_t _byte_position)
@@ -567,7 +567,7 @@ namespace compiler {
 	std::string NFA::ExpectedEndOfBracketException::buildMessage(size_t _byte_position) {
 		std::stringstream ss;
 		ss << "Expected '}' at byte [" << _byte_position << "].";
-		throw std::runtime_error(ss.str());
+		return ss.str();
 	}
 
 	NFA::ExpectedEndOfBracketException::ExpectedEndOfBracketException(size_t _byte_position)
@@ -576,7 +576,7 @@ namespace compiler {
 	std::string  NFA::UnexpectedEndOfBracketException::buildMessage(size_t _byte_position) {
 		std::stringstream ss;
 		ss << "Unexpected '}' at byte [" << _byte_position << "].";
-		throw std::runtime_error(ss.str());
+		return ss.str();
 	}
 
 	NFA::UnexpectedEndOfBracketException::UnexpectedEndOfBracketException(size_t _byte_position)
@@ -590,7 +590,7 @@ namespace compiler {
 			<< "' at byte [" 
 			<< _byte_position 
 			<< "].";
-		throw std::runtime_error(ss.str());
+		return ss.str();
 	}
 	
 	NFA::UnknownBracketOperationException::UnknownBracketOperationException(char _op, size_t _byte_position)
@@ -599,8 +599,7 @@ namespace compiler {
 	std::string NFA::NonUTF8CharacterException::buildMessage(size_t _byte_position) {
 		std::stringstream ss;
 		ss << "Found non UTF-8 character at byte [" << _byte_position << "].";
-		throw std::runtime_error(ss.str());
-		return "Couldn't process regular expression due to internal error.";
+		return ss.str();
 	}
 
 	NFA::NonUTF8CharacterException::NonUTF8CharacterException(size_t _byte_position)
